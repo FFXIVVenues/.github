@@ -9,32 +9,37 @@ Join our community discord is at https://discord.gg/a4BMgkZJ4d 🥳.
 ## Architecture 
 ```mermaid
     C4Context
-      title FFXIV Venues C2 Diagram
+      title FFXIV Venues Index C2 Diagram
       
-      Person(manager, "Venue Owner/Manager", "A owner or manager of a FFXIV RP Venue.")
       Person(rper, "Venue Prospective Guest", "A visitor of venues.") 
+      Person(manager, "Venue Owner/Manager", "A owner or manager of a FFXIV RP Venue.")
       
-      Enterprise_Boundary(clients, "Clients") {
-        Container(site, "FFXIV Venues Index Site", "HTML5/CSS/JS/ReactJs <br>[Azure AppService]")
-        Container(plugin, "FFXIV Venues Dalamud Plugin", "C#.NET <br> [Dalamud]")
-        Container(veni, "FFXIV Venues Discord Bot (Veni Ki)", "C#.NET <br> [Containerized in Azure VM]")
+      Container_Boundary(clients, "Clients") {
+        Container(site, "FFXIV Venues Site", "HTML5/CSS/JS/ReactJs <br>[Azure AppService]", "The main application of the suite; <br/>shows all venues, their details and the  <br/>week's venue schedule")
+        Container(plugin, "FFXIV Venues Dalamud Plugin", "C#.NET <br> [Dalamud]", "FFXIV Dalamud plugin to show all <br/> venues, their details, and the week's <br/> venue schedule.")
+        Container(veni, "Veni Ki (Bot)", "C#.NET <br> [Containerized in Azure VM]", "Discord Bot with a degree of language <br/> understanding for conversational operations;  <br/>shows venue details and allows venue  <br/>managers to manage their venue on the index.")
       }
       
-      Enterprise_Boundary(api, "API") {
-        Container(api, "ASP.NET Web API", "C#.NET<br>[Azure AppService]")
-        ContainerDb(database, "Database", "Azure Cosmos SQL", "Stores venue details.")
+      Container_Boundary(api, "API") {
+        Container(api, "Restful Web API", "C# ASP.NET<br>[Azure AppService]", "The main backbone application of the <br/>platform; allows querying, create, editing and <br/>deleting of venues via restful HTTP web requests.")
+      }
+      
+      Container_Boundary(storage, "Storage") {
         ContainerDb(storage, "Media Storage", "Azure Blob Storage", "Stores venue banners.")
+        ContainerDb(database, "Database", "Azure Cosmos SQL", "Stores venue details and <br/>Veni guild configurations.")
       }
       
+      Rel(site, api, "Reads venue details via")
+      Rel(plugin, api, "Reads venue details via")
+      Rel(veni, api, "Read/writes venue details via")
       
-      Rel(site, api, "")
-      Rel(plugin, api, "")
-      Rel(veni, api, "")
-      
-      Rel(api, database, "")
-      Rel(api, storage, "")
+      Rel(api, database, "Reads/writes venue details to")
+      Rel(api, storage, "Reads/writes venue banner images to")
+      Rel(veni, database, "Read/write discord guild configuration to")
       
       Rel(manager, veni, "Manages venue")
       Rel(rper, site, "Looks for venues to visit")
       Rel(rper, plugin, "Looks for venues to visit")
+      
+      UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```
